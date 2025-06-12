@@ -1,8 +1,6 @@
 package com.shuzimali.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -15,6 +13,7 @@ public class User {
     private String username;
     private String password;
     private String email;
-    private Integer roleType; // 1-普通用户 2-管理员 3-超管
-    private LocalDateTime createTime;
+    private String phone;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime gmtCreate;
 }

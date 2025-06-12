@@ -1,0 +1,46 @@
+# application.yml
+spring:
+  # 必须添加此配置才能激活数据源
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.238.133:3306/szml_users_0?useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+
+  shardingsphere:
+    datasource:
+      names: szml_users_0, szml_users_1  # 数据源名称
+      szml_users_0:
+        url: jdbc:mysql://192.168.238.133:3306/szml_users_0?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: root
+        password: 123456
+      szml_users_1:
+        url: jdbc:mysql://192.168.238.133:3306/szml_users_1?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai  # 修改为szml_users_1
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: root
+        password: 123456
+
+    sharding:
+      tables:
+        t_user:  # 逻辑表名（与接口描述中的表名一致）
+          actual-data-nodes: szml_users_$->{0..1}.t_user_$->{0..3}  # 使用t_user前缀
+          database-strategy:
+            inline:
+              sharding-column: user_id
+              algorithm-expression: szml_users_$->{user_id % 2}
+          table-strategy:
+            inline:
+              sharding-column: user_id
+              algorithm-expression: t_user_$->{user_id % 4}  # 4张分表
+          # 关键修正：key-generator与分片策略同级
+          key-generator:
+            column: user_id
+            type: SNOWFLAKE
+            props:
+              worker.id: 123  # 需配置实际worker ID
+
+    # 其他配置
+    props:
+      sql.show: true  # 开启SQL日志
+

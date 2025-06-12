@@ -5,19 +5,26 @@ import com.shuzimali.entity.Result;
 import com.shuzimali.entity.User;
 import com.shuzimali.entity.UserDTO;
 import com.shuzimali.service.UserService;
+import com.shuzimali.utils.ResultUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    @PostMapping("/addUser")
+    public Result<?> addUser(@RequestBody User user){
+        return ResultUtils.success(userService.save(user));
+    }
 
     @PostMapping("/register")
     public Result<?> register(@RequestBody UserDTO userDTO){
-        return null;
+        return  null;
     }
+
 
     @PostMapping("/login")
     public Result<String> login(@RequestBody LoginDTO loginDTO){

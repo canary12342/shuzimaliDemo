@@ -1,5 +1,6 @@
 package com.shuzimali.entity;
 
+import com.shuzimali.utils.ErrorCode;
 import lombok.Data;
 
 @Data
@@ -14,5 +15,8 @@ public class Result<T> {
         this.code = code;
         this.data = data;
         this.message = message;
+    }
+
+    public Result(ErrorCode errorCode) {
     }
 }
