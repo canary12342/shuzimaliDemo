@@ -11,6 +11,8 @@
 	<modules>
 
 		<module>user-service</module>
+		<module>permission-service</module>
+		<module>log-service</module>
 	</modules>
 
 	<parent>
