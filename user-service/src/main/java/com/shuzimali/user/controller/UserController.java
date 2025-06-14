@@ -9,6 +9,8 @@ import com.shuzimali.user.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -29,6 +31,10 @@ public class UserController {
     @PostMapping("/login")
     public Result<String> login(@RequestBody LoginDTO loginDTO){
         return ResultUtils.success(userService.login(loginDTO));
+    }
+    @GetMapping("/users")
+    public Result<List<User>> getUsers(){
+        return ResultUtils.success(userService.list());
     }
 
     @GetMapping("/{userId}")
