@@ -1,4 +1,4 @@
-package com.shuzimali.utils;
+package com.shuzimali.user.utils;
 
 import lombok.Getter;
 

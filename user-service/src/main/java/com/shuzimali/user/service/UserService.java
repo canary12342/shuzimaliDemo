@@ -1,9 +1,8 @@
-package com.shuzimali.service;
+package com.shuzimali.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.shuzimali.entity.User;
-import com.shuzimali.entity.UserDTO;
-import org.springframework.stereotype.Service;
+import com.shuzimali.user.entity.User;
+import com.shuzimali.user.entity.UserDTO;
 
 public interface UserService extends IService<User> {
     boolean register(UserDTO userDTO);

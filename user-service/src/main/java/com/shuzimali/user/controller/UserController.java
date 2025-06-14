@@ -1,13 +1,12 @@
-package com.shuzimali.controller;
+package com.shuzimali.user.controller;
 
-import com.shuzimali.entity.LoginDTO;
-import com.shuzimali.entity.Result;
-import com.shuzimali.entity.User;
-import com.shuzimali.entity.UserDTO;
-import com.shuzimali.service.UserService;
-import com.shuzimali.utils.ResultUtils;
+import com.shuzimali.user.entity.LoginDTO;
+import com.shuzimali.user.entity.Result;
+import com.shuzimali.user.entity.User;
+import com.shuzimali.user.entity.UserDTO;
+import com.shuzimali.user.service.UserService;
+import com.shuzimali.user.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

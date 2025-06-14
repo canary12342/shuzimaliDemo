@@ -17,10 +17,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
-        <!--common-->
+        <!--api与common-->
         <dependency>
             <groupId>com.shuzimali</groupId>
-            <artifactId>demo-common</artifactId>
+            <artifactId>demo-api</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

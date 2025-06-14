@@ -1,6 +1,6 @@
-package com.shuzimali.entity;
+package com.shuzimali.user.entity;
 
-import com.shuzimali.utils.ErrorCode;
+import com.shuzimali.user.utils.ErrorCode;
 import lombok.Data;
 
 @Data

@@ -1,4 +1,4 @@
-package com.shuzimali;
+package com.shuzimali.api;
 
 public class Main {
     public static void main(String[] args) {

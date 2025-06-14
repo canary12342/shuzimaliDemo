@@ -1,4 +1,4 @@
-package com.shuzimali.entity;
+package com.shuzimali.user.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;

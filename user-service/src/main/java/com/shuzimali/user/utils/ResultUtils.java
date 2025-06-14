@@ -1,7 +1,7 @@
-package com.shuzimali.utils;
+package com.shuzimali.user.utils;
 
 
-import com.shuzimali.entity.Result;
+import com.shuzimali.user.entity.Result;
 
 public class ResultUtils {
 
