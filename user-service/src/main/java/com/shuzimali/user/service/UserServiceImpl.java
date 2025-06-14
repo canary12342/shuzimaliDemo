@@ -2,6 +2,7 @@ package com.shuzimali.user.service;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.shuzimali.api.client.PermissionClient;
@@ -100,6 +101,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return lambdaQuery().in(User::getUserId, userIds).list();
         }else {
             return lambdaQuery().list();
+        }
+    }
+
+    @Override
+    public Page<User> getPageUsers(Long userId, int pageNum, int pageSize) {
+        String userRoleCode = permissionClient.getUserRoleCode(userId);
+        Page<User> page = new Page<>(pageNum, pageSize);
+        if ("user".equals(userRoleCode)){
+            return lambdaQuery().eq(User::getUserId, userId).page(page);
+        }else if("admin".equals(userRoleCode)){
+            List<Long> userIds =permissionClient.getNormalUsers();
+            return lambdaQuery().in(User::getUserId, userIds).page(page);
+        }else {
+            return lambdaQuery().page(page);
         }
     }
 

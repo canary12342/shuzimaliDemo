@@ -1,5 +1,6 @@
 package com.shuzimali.user.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.shuzimali.common.utils.UserContext;
 import com.shuzimali.user.entity.LoginDTO;
 import com.shuzimali.user.entity.Result;
@@ -34,9 +35,9 @@ public class UserController {
         return ResultUtils.success(userService.login(loginDTO));
     }
     @GetMapping("/users")
-    public Result<List<User>> getUsers(){
+    public Result<Page<User>> getUsers(@RequestParam Integer pageNum,@RequestParam Integer pageSize){
         Long userId = UserContext.getUser();
-        return ResultUtils.success(userService.getUsers(userId));
+        return ResultUtils.success(userService.getPageUsers(userId, pageNum, pageSize));
     }
 
     @GetMapping("/{userId}")

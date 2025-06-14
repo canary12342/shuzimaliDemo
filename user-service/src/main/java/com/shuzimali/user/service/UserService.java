@@ -1,5 +1,6 @@
 package com.shuzimali.user.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.shuzimali.user.entity.LoginDTO;
 import com.shuzimali.user.entity.User;
@@ -13,4 +14,6 @@ public interface UserService extends IService<User> {
     String login(LoginDTO loginDTO);
 
     List<User> getUsers(Long userId);
+
+    Page<User> getPageUsers(Long userId, int pageNum, int pageSize);
 }

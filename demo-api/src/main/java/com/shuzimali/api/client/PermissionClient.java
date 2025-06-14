@@ -12,7 +12,7 @@ public interface PermissionClient {
     void bindDefaultRole(@RequestParam("userId") Long userId);
 
     // 查询用户角色码（返回role_code）
-    @GetMapping("/getUserRoleCode/{userId}")
+    @GetMapping("/permission/getUserRoleCode/{userId}")
     String getUserRoleCode(@PathVariable("userId") Long userId);
 
     // 超管调用：升级用户为管理员
