@@ -22,7 +22,8 @@ public class UserController {
 
     @PostMapping("/register")
     public Result<?> register(@RequestBody UserDTO userDTO){
-        return  null;
+
+        return  ResultUtils.success(userService.register(userDTO));
     }
 
 

@@ -1,0 +1,16 @@
+# 应用名称
+spring:
+  application:
+    name: shuzimali-permission-service
+  # 服务器端口
+  server:
+    port: 8081
+
+
+
+  ### 本配置文件仅用于本地开发环境使用 ###
+  # spring输出颜色
+  output:
+    ansi:
+      enabled: ALWAYS
+
