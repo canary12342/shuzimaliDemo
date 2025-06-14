@@ -25,16 +25,18 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
 
     @Override
     public String getUserRoleCode(Long userId) {
-        return "";
+        UserRole userRole = lambdaQuery().eq(UserRole::getUserId, userId).one();
+        Roles roles = rolesService.getById(userRole.getRoleId());
+        return roles.getRoleCode();
     }
 
     @Override
     public void upgradeToAdmin(Long userId) {
-
+        lambdaUpdate().eq(UserRole::getUserId, userId).set(UserRole::getRoleId, 2).update();
     }
 
     @Override
     public void downgradeToUser(Long userId) {
-
+        lambdaUpdate().eq(UserRole::getUserId, userId).set(UserRole::getRoleId, 3).update();
     }
 }

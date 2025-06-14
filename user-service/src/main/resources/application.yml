@@ -1,3 +1,7 @@
+# 应用名称
+spring:
+  application:
+    name: shuzimali-user-service
   # 服务器端口
   server:
     port: 8082
@@ -75,3 +79,12 @@
     # 显示分库分表后执行的SQL语句
     props:
       sql-show: true
+szml:
+  jwt:
+    location: classpath:shuzimali.user.jks
+    alias: shuzimali
+    password: 123456
+    tokenTTL: 30m
+  swagger:
+    title: "用户服务接口文档"
+    package: com.shuzimali.user.controller
