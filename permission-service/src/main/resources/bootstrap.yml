@@ -1,6 +1,6 @@
 spring:
   application:
-    name: shuzimali-user-service
+    name: shuzimali-permission-service
   profiles:
     active: dev
   cloud:
