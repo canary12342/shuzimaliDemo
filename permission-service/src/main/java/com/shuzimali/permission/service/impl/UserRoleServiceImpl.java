@@ -10,6 +10,9 @@ import com.shuzimali.permission.service.RolesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> implements PermissionService {
@@ -38,5 +41,13 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
     @Override
     public void downgradeToUser(Long userId) {
         lambdaUpdate().eq(UserRole::getUserId, userId).set(UserRole::getRoleId, 3).update();
+    }
+
+    @Override
+    public List<Long> getNormalUsers() {
+        return lambdaQuery().eq(UserRole::getRoleId, 3).list()
+                .stream()
+                .map(UserRole::getUserId)
+                .collect(Collectors.toList());
     }
 }

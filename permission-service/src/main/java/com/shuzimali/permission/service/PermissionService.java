@@ -3,6 +3,8 @@ package com.shuzimali.permission.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.shuzimali.permission.domain.UserRole;
 
+import java.util.List;
+
 // RPC接口定义
 public interface PermissionService extends IService<UserRole> {
     // 绑定默认角色（普通用户）  
@@ -15,5 +17,7 @@ public interface PermissionService extends IService<UserRole> {
     void upgradeToAdmin(Long userId);  
 
     // 超管调用：降级用户为普通角色  
-    void downgradeToUser(Long userId);  
+    void downgradeToUser(Long userId);
+
+    List<Long> getNormalUsers();
 }

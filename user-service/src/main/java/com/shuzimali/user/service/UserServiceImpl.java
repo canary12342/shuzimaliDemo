@@ -90,6 +90,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return jwtTool.createToken(user.getUserId(), jwtProperties.getTokenTTL());
     }
 
+    @Override
+    public List<User> getUsers(Long userId) {
+        String userRoleCode = permissionClient.getUserRoleCode(userId);
+        if ("user".equals(userRoleCode)){
+            return List.of(getById(userId));
+        }else if("admin".equals(userRoleCode)){
+            List<Long> userIds =permissionClient.getNormalUsers();
+            return lambdaQuery().in(User::getUserId, userIds).list();
+        }else {
+            return lambdaQuery().list();
+        }
+    }
+
     public String getEncryptPassword(String userPassword) {
         // 加盐，混淆密码
         final String SALT = "tanxin";

@@ -3,6 +3,8 @@ package com.shuzimali.api.client;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @FeignClient("shuzimali-permission-service")
 public interface PermissionClient {
     // 绑定默认角色（普通用户）
@@ -20,4 +22,7 @@ public interface PermissionClient {
     // 超管调用：降级用户为普通角色
     @PutMapping("/permission/downgradeToUser/{userId}")
     void downgradeToUser(@PathVariable("userId") Long userId);
+
+    @GetMapping("/permission/getNormalUsers")
+    List<Long> getNormalUsers();
 }

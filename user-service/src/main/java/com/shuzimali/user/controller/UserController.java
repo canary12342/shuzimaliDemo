@@ -1,5 +1,6 @@
 package com.shuzimali.user.controller;
 
+import com.shuzimali.common.utils.UserContext;
 import com.shuzimali.user.entity.LoginDTO;
 import com.shuzimali.user.entity.Result;
 import com.shuzimali.user.entity.User;
@@ -34,7 +35,8 @@ public class UserController {
     }
     @GetMapping("/users")
     public Result<List<User>> getUsers(){
-        return ResultUtils.success(userService.list());
+        Long userId = UserContext.getUser();
+        return ResultUtils.success(userService.getUsers(userId));
     }
 
     @GetMapping("/{userId}")
