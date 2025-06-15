@@ -2,10 +2,7 @@ package com.shuzimali.user.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.shuzimali.common.utils.UserContext;
-import com.shuzimali.user.entity.LoginDTO;
-import com.shuzimali.user.entity.Result;
-import com.shuzimali.user.entity.User;
-import com.shuzimali.user.entity.UserDTO;
+import com.shuzimali.user.entity.*;
 import com.shuzimali.user.service.UserService;
 import com.shuzimali.user.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +38,19 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public Result<User> getUserInfo(@PathVariable Long userId,
-                                    @RequestHeader("Authorization") String token){
-        return null;
+    public Result<User> getUserInfo(@PathVariable Long userId){
+        Long id = UserContext.getUser();
+        return ResultUtils.success(userService.getUserInfo(userId,id));
     }
+    @PutMapping("/{userId}")
+    public Result<Boolean> updateUserInfo(@PathVariable Long userId,@RequestBody UserInfo userInfo){
+        Long currentId = UserContext.getUser();
+        return ResultUtils.success(userService.updateUserInfo(userId,currentId,userInfo));
+    }
+    @PostMapping("/{userId}")
+    public Result<Boolean> updateUserPassword(@PathVariable Long userId, PasswordDTO passwordDTO){
+        Long currentId = UserContext.getUser();
+        return ResultUtils.success(userService.updateUserPassword(userId,currentId,passwordDTO));
+    }
+
 }

@@ -9,9 +9,7 @@ import com.shuzimali.api.client.PermissionClient;
 import com.shuzimali.common.exception.BusinessException;
 import com.shuzimali.common.exception.ErrorCode;
 import com.shuzimali.user.config.JwtProperties;
-import com.shuzimali.user.entity.LoginDTO;
-import com.shuzimali.user.entity.User;
-import com.shuzimali.user.entity.UserDTO;
+import com.shuzimali.user.entity.*;
 
 import com.shuzimali.user.mapper.UserMapper;
 import com.shuzimali.user.utils.JwtTool;
@@ -23,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -115,6 +114,66 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return lambdaQuery().in(User::getUserId, userIds).page(page);
         }else {
             return lambdaQuery().page(page);
+        }
+    }
+
+    @Override
+    public User getUserInfo(Long userId, Long id) {
+        String userRoleCode = permissionClient.getUserRoleCode(id);
+        if ("user".equals(userRoleCode)){
+            return userId.equals(id) ?getById(userId):null;
+        }else if("admin".equals(userRoleCode)){
+            List<Long> userIds =permissionClient.getNormalUsers();
+            return userIds.contains(userId)?getById(userId):null;
+        }else {
+            return getById(userId);
+        }
+    }
+
+    @Override
+    public Boolean updateUserInfo(Long userId, Long currentId, UserInfo userInfo) {
+        String userRoleCode = permissionClient.getUserRoleCode(currentId);
+        User user = new User();
+        BeanUtils.copyProperties(userInfo, user);
+        user.setUserId(userId);
+        if ("user".equals(userRoleCode)){
+            return userId.equals(currentId) ?updateById(user):null;
+        }else if("admin".equals(userRoleCode)){
+            List<Long> userIds =permissionClient.getNormalUsers();
+            return userIds.contains(userId)?updateById(user):null;
+        }else {
+            return updateById(user);
+        }
+    }
+
+    @Override
+    public Boolean updateUserPassword(Long userId, Long currentId, PasswordDTO passwordDTO) {
+        String userRoleCode = permissionClient.getUserRoleCode(currentId);
+        String userPassword = passwordDTO.getOldPassword();
+        String newPassword = passwordDTO.getNewPassword();
+        // 1. 校验
+        if (StrUtil.hasBlank(userPassword,newPassword)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        if (userPassword.length() < 8|| newPassword.length() < 8) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码错误");
+        }
+        // 2. 对用户传递的密码进行加密
+        String encryptPassword = getEncryptPassword(userPassword);
+        String newEncryptPassword = getEncryptPassword(newPassword);
+        // 3. 查询数据库中的用户是否存在
+        User user = lambdaQuery().eq(User::getUserId, userId).eq(User::getPassword, encryptPassword).one();
+        if(user == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或者密码错误");
+        }
+        user.setPassword(newEncryptPassword);
+        if ("user".equals(userRoleCode)){
+            return userId.equals(currentId) ?updateById(user):null;
+        }else if("admin".equals(userRoleCode)){
+            List<Long> userIds =permissionClient.getNormalUsers();
+            return userIds.contains(userId)?updateById(user):null;
+        }else {
+            return updateById(user);
         }
     }
 
