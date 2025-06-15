@@ -1,22 +1,28 @@
 package com.shuzimali.user.interceptors;
 
-import cn.hutool.core.util.StrUtil;
+
 import com.shuzimali.common.utils.UserContext;
+import com.shuzimali.user.utils.JwtTool;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class UserInfoInterceptor implements HandlerInterceptor {
+@RequiredArgsConstructor
+public class LoginInterceptor implements HandlerInterceptor {
+
+    private final JwtTool jwtTool;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 1.获取登录用户信息
-        String userInfo = request.getHeader("user-info");
-        // 2.判断是否获取了用户，如果有，存入ThreadLocal
-        if (StrUtil.isNotBlank(userInfo)) {
-            UserContext.setUser(Long.valueOf(userInfo));
-        }
-        // 3.放行
+        // 1.获取请求头中的 token
+        String token = request.getHeader("authorization");
+        // 2.校验token
+        Long userId = jwtTool.parseToken(token);
+        // 3.存入上下文
+        UserContext.setUser(userId);
+        // 4.放行
         return true;
     }
 

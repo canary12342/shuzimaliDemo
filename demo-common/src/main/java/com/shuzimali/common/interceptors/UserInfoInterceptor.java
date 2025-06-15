@@ -8,17 +8,15 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@RequiredArgsConstructor
 public class UserInfoInterceptor implements HandlerInterceptor {
-    private final JwtTool jwtTool;
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 1.获取登录用户信息
         String token = request.getHeader("user-info");
         // 2.判断是否获取了用户，如果有，存入ThreadLocal
         if (StrUtil.isNotBlank(token)) {
-            String userInfo = JwtTool.parseToken(token);
-            UserContext.setUser(Long.valueOf(userInfo));
+            //todo  从token中获取用户
+            UserContext.setUser(Long.valueOf(token));
         }
         // 3.放行
         return true;
