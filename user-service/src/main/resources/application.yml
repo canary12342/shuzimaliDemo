@@ -1,10 +1,12 @@
-# 应用名称
 spring:
   application:
     name: shuzimali-user-service
-  # 服务器端口
-  server:
-    port: 8082
+  rabbitmq:
+    host: 192.168.238.133
+    port: 5672
+    virtual-host: shuzimali
+    username: shuzimali
+    password: 123456
 
   # 日志配置
   logging:

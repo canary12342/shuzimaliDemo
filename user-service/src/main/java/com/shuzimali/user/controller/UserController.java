@@ -8,6 +8,7 @@ import com.shuzimali.user.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.UnknownHostException;
 import java.util.List;
 
 @RestController
@@ -21,7 +22,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public Result<?> register(@RequestBody UserDTO userDTO){
+    public Result<?> register(@RequestBody UserDTO userDTO) throws UnknownHostException {
 
         return  ResultUtils.success(userService.register(userDTO));
     }

@@ -13,13 +13,18 @@ import com.shuzimali.user.entity.*;
 
 import com.shuzimali.user.mapper.UserMapper;
 import com.shuzimali.user.utils.JwtTool;
+import com.shuzimali.user.utils.RabbitMqHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,9 +35,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final PermissionClient permissionClient;
     private final JwtTool jwtTool;
     private final JwtProperties jwtProperties;
+    private final RabbitMqHelper rabbitMqHelper;
+
     @Override
     @Transactional
-    public boolean register(UserDTO userDTO) {
+    public boolean register(UserDTO userDTO) throws UnknownHostException {
         List<User> list = lambdaQuery().eq(User::getUsername, userDTO.getUsername()).list();
         String username = userDTO.getUsername();
         String userPassword = userDTO.getPassword();
@@ -60,7 +67,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         permissionClient.bindDefaultRole(user.getUserId());
         //todo MQ发送消息到日志微服务
-
+        Event event = new Event();
+        event.setUserId(user.getUserId());
+        event.setAction("register_user");
+        String ipAddress = InetAddress.getLocalHost().getHostAddress();
+        event.setIp(ipAddress);
+        event.setDetail("用户注册成功"+ LocalDateTime.now());
+        try {
+            rabbitMqHelper.sendMessageWithConfirm("exchange.log", "operation.log", event,3);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "发送操作日志消息到MQ失败");
+        }
         return true;
     }
 

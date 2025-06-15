@@ -1,0 +1,27 @@
+server:
+  port: 8082
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.238.133:3306/szml_log
+    username: root
+    password: 123456
+  rabbitmq:
+    host: 192.168.238.133
+    port: 5672
+    virtual-host: shuzimali
+    username: shuzimali
+    password: 123456
+
+  ### 本配置文件仅用于本地开发环境使用 ###
+  # spring输出颜色
+  output:
+    ansi:
+      enabled: ALWAYS
+
+szml:
+  swagger:
+    title: "权限服务接口文档"
+    package: com.shuzimali.logging.controller
+

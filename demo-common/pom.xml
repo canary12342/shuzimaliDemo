@@ -74,5 +74,17 @@
             <version>1.6.6</version>
             <scope>compile</scope>
         </dependency>
+        <!--Spring整合Rabbit依赖-->
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!--AMQP依赖-->
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-amqp</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

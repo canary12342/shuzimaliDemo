@@ -12,7 +12,7 @@
 
 		<module>user-service</module>
 		<module>permission-service</module>
-		<module>log-service</module>
+		<module>logging-service</module>
 		<module>demo-api</module>
 		<module>demo-common</module>
 	</modules>
