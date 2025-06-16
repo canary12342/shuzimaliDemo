@@ -12,6 +12,7 @@ import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class OperationLogsListener {
+    private final StringRedisTemplate stringRedisTemplate;
     private final OperationLogsService operationLogsService;
 
     @RabbitListener(bindings = @QueueBinding(
@@ -45,12 +47,14 @@ public class OperationLogsListener {
     )
             ,ackMode = "MANUAL" )
     public void onApplicationEvent(@Payload Event event
-            , Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag) throws IOException {
+            , Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag
+            ,@Header(AmqpHeaders.MESSAGE_ID) String messageId) throws IOException {
         log.info("OperationLogsListener: {}", event);
         try {
-
             //  幂等检查（防止重复消费）
-            if (operationLogsService.existsByMessageId(event.getMessageId())) {
+            String redisKey = "log:messageId:" + messageId;
+            Boolean isFirstProcess  = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1");
+            if (Boolean.FALSE.equals(isFirstProcess)) {
                 log.warn("消息已消费，直接ACK. messageId={}", event.getMessageId());
                 channel.basicAck(tag, false); // 确认消息
                 return;

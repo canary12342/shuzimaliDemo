@@ -66,7 +66,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
         }
         permissionClient.bindDefaultRole(user.getUserId());
-        //todo MQ发送消息到日志微服务
         Event event = new Event();
         event.setUserId(user.getUserId());
         event.setAction("register_user");

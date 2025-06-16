@@ -13,6 +13,11 @@ spring:
     virtual-host: shuzimali
     username: shuzimali
     password: 123456
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    timeout: 5000
 
   ### 本配置文件仅用于本地开发环境使用 ###
   # spring输出颜色
