@@ -45,7 +45,7 @@ public class RocketMistranslationListener implements RocketMQListener<MessageExt
             UserRole userRole = new UserRole();
             userRole.setUserId(user.getUserId());
             Roles roles = rolesService.lambdaQuery().eq(Roles::getRoleCode, "user").one();
-            if(roles != null){
+            if(roles == null){
                 throw new RuntimeException("没有找到角色");
             }
             userRole.setRoleId(roles.getRoleId());
