@@ -7,6 +7,11 @@ spring:
     virtual-host: shuzimali
     username: shuzimali
     password: 123456
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    timeout: 5000
 
   # 日志配置
   logging:
@@ -90,3 +95,8 @@ szml:
   swagger:
     title: "用户服务接口文档"
     package: com.shuzimali.user.controller
+rocketmq:
+  name-server: 192.168.238.133:9876
+  producer:
+      group: shuzimali-user-service
+      send-message-timeout: 5000

@@ -21,4 +21,8 @@ public interface UserService extends IService<User> {
     Boolean updateUserInfo(Long userId, Long currentId, UserInfo userInfo);
 
     Boolean updateUserPassword(Long userId, Long currentId, PasswordDTO passwordDTO);
+
+    void saveUserWithLog(User user,String transactionId);
+
+    void processedCallback(String transactionId);
 }

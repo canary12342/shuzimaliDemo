@@ -37,4 +37,5 @@ public class PermissionController {
     public List<Long> getNormalUsers(){
         return permissionService.getNormalUsers();
     }
+
 }

@@ -20,4 +20,6 @@ public interface PermissionService extends IService<UserRole> {
     void downgradeToUser(Long userId);
 
     List<Long> getNormalUsers();
+
+    void processedCallback(String transactionId);
 }

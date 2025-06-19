@@ -1,7 +1,8 @@
-package com.shuzimali.user.service;
+package com.shuzimali.user.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
@@ -12,21 +13,30 @@ import com.shuzimali.user.config.JwtProperties;
 import com.shuzimali.user.entity.*;
 
 import com.shuzimali.user.mapper.UserMapper;
+import com.shuzimali.user.service.UserService;
 import com.shuzimali.user.utils.JwtTool;
 import com.shuzimali.user.utils.RabbitMqHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.apache.rocketmq.client.producer.SendStatus;
+import org.apache.rocketmq.client.producer.TransactionSendResult;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +46,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final JwtTool jwtTool;
     private final JwtProperties jwtProperties;
     private final RabbitMqHelper rabbitMqHelper;
+    private final RocketMQTemplate rocketMQTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
+    public static final String Topic = "BIND_TOPIC";
+    private static final String Tag = "userId";
 
     @Override
     @Transactional
@@ -60,12 +74,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         User user = new User();
         BeanUtils.copyProperties(userDTO, user);
+        user.setUserId(IdUtil.getSnowflakeNextId());
         user.setPassword(encryptPassword);
-        boolean saveResult = this.save(user);
-        if (!saveResult) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
-        }
-        permissionClient.bindDefaultRole(user.getUserId());
+        //permissionClient.bindDefaultRole(user.getUserId());
+        String transactionId = UUID.randomUUID().toString().replace("-", "");
+        log.info("【发送半消息】transactionId={}", transactionId);
+
+        try {
+            // 校验事务ID非空
+            if (transactionId.isEmpty()) {
+                throw new IllegalArgumentException("transactionId 不能为空");
+            }
+            Message<?> message = MessageBuilder.withPayload(user)
+                    .setHeader(RocketMQHeaders.TRANSACTION_ID, transactionId)
+                    .build();
+            TransactionSendResult sendResult = rocketMQTemplate.sendMessageInTransaction(
+                    Topic+":"+Tag, message, user);
+            log.debug("【发送半消息】sendResult={}", JSON.toJSONString(sendResult));
+            // 判断发送状态
+            if (sendResult == null || !SendStatus.SEND_OK.equals(sendResult.getSendStatus())) {
+                log.error("【发送半消息失败】sendResult={}", JSON.toJSONString(sendResult));
+                // 可选：抛出自定义异常或触发补偿机制
+                throw new RuntimeException("事务消息发送失败: " + sendResult);
+            }
+
+            } catch (MessagingException e) {
+                log.error("【发送半消息异常】", e);
+                throw new MessagingException("消息发送过程中发生异常", e);
+            }
+
+
         Event event = new Event();
         event.setUserId(user.getUserId());
         event.setAction("register_user");
@@ -191,6 +229,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }else {
             return updateById(user);
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveUserWithLog(User user,String transactionId) {
+        save(user);
+
+        stringRedisTemplate.opsForSet().add("user:permission:processingBindUserRole", String.valueOf(user.getUserId()));
+    }
+
+    @Override
+    public void processedCallback(String transactionId) {
+        stringRedisTemplate.opsForSet().remove("processingBindUserRole",transactionId);
     }
 
     public String getEncryptPassword(String userPassword) {

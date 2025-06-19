@@ -53,5 +53,8 @@ public class UserController {
         Long currentId = UserContext.getUser();
         return ResultUtils.success(userService.updateUserPassword(userId,currentId,passwordDTO));
     }
-
+    @GetMapping("/processedCallback/{id}")
+    public void processedCallback(@PathVariable String id){
+        userService.processedCallback(id);
+    }
 }

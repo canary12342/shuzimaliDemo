@@ -50,4 +50,9 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
                 .map(UserRole::getUserId)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void processedCallback(String transactionId) {
+
+    }
 }

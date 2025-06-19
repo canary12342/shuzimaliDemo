@@ -18,6 +18,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Duration;
 
 @Slf4j
 @Component
@@ -53,7 +54,7 @@ public class OperationLogsListener {
         try {
             //  幂等检查（防止重复消费）
             String redisKey = "log:messageId:" + messageId;
-            Boolean isFirstProcess  = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1");
+            Boolean isFirstProcess  = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
             if (Boolean.FALSE.equals(isFirstProcess)) {
                 log.warn("消息已消费，直接ACK. messageId={}", event.getMessageId());
                 channel.basicAck(tag, false); // 确认消息
