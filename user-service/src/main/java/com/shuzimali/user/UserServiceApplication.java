@@ -1,7 +1,6 @@
 package com.shuzimali.user;
 
 import com.shuzimali.api.config.DefaultFeignConfig;
-import com.shuzimali.user.controller.Producer;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

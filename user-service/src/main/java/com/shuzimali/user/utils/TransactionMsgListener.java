@@ -30,7 +30,7 @@ public class TransactionMsgListener implements RocketMQLocalTransactionListener 
         String transactionId = (String) messageHeaders.get(RocketMQHeaders.TRANSACTION_ID);
         log.info("【执行本地事务】消息体参数：transactionId={}", transactionId);
 
-        // 执行带有事务注解的本地方法：增加用户余额+保存mq日志
+        // 执行带有事务注解的本地方法：
         try {
             User user = (User) o;
             userService.saveUserWithLog(user, transactionId);
@@ -39,25 +39,7 @@ public class TransactionMsgListener implements RocketMQLocalTransactionListener 
             log.error("【执行本地事务】发生异常，消息将被回滚", e);
             return RocketMQLocalTransactionState.ROLLBACK; // 异常：向MQ Server发送rollback消息
         }
-        //模拟一个处理结果
-        /**
-         * 模拟返回事务状态
-         */
-        /*switch (index){
-            case 1:
-                //处理业务
-                String jsonStr = new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
-                System.out.println("本地事务回滚，回滚消息，"+jsonStr);
-                //返回ROLLBACK状态的消息会被丢弃
-                return RocketMQLocalTransactionState.ROLLBACK;
-            case 3:
-                //返回UNKNOW状态的消息会等待Broker进行事务状态回查
-                return RocketMQLocalTransactionState.UNKNOWN;
-            default:
-                System.out.println("事务提交，消息正常处理");
-                //返回COMMIT状态的消息会立即被消费者消费到
-                return RocketMQLocalTransactionState.COMMIT;
-        }*/
+
     }
 
     /**

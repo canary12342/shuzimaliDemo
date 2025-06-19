@@ -10,17 +10,17 @@ import java.util.List;
 public interface UserService extends IService<User> {
     boolean register(UserDTO userDTO) throws UnknownHostException;
 
-    String login(LoginDTO loginDTO);
+    String login(LoginDTO loginDTO) throws UnknownHostException;
 
-    List<User> getUsers(Long userId);
+    List<User> getUsers(Long userId) throws UnknownHostException;
 
-    Page<User> getPageUsers(Long userId, int pageNum, int pageSize);
+    Page<User> getPageUsers(Long userId, int pageNum, int pageSize) throws UnknownHostException;
 
-    User getUserInfo(Long userId, Long id);
+    User getUserInfo(Long userId, Long id) throws UnknownHostException;
 
-    Boolean updateUserInfo(Long userId, Long currentId, UserInfo userInfo);
+    Boolean updateUserInfo(Long userId, Long currentId, UserInfo userInfo) throws UnknownHostException;
 
-    Boolean updateUserPassword(Long userId, Long currentId, PasswordDTO passwordDTO);
+    Boolean updateUserPassword(Long userId, Long currentId, PasswordDTO passwordDTO) throws UnknownHostException;
 
     void saveUserWithLog(User user,String transactionId);
 

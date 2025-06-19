@@ -109,7 +109,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         event.setAction("register_user");
         String ipAddress = InetAddress.getLocalHost().getHostAddress();
         event.setIp(ipAddress);
-        event.setDetail("用户注册成功"+ LocalDateTime.now());
+        event.setDetail(user.getUsername()+"用户注册"+ LocalDateTime.now());
         try {
             rabbitMqHelper.sendMessageWithConfirm("exchange.log", "operation.log", event,3);
         } catch (Exception e) {
@@ -119,7 +119,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public String login(LoginDTO loginDTO) {
+    public String login(LoginDTO loginDTO) throws UnknownHostException {
         String username = loginDTO.getUsername();
         String userPassword = loginDTO.getPassword();
         // 1. 校验
@@ -141,11 +141,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.info("user login failed, username cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或者密码错误");
         }
+        Event event = new Event();
+        event.setUserId(user.getUserId());
+        event.setAction("login_user");
+        String ipAddress = InetAddress.getLocalHost().getHostAddress();
+        event.setIp(ipAddress);
+        event.setDetail(user.getUsername()+"登录"+ LocalDateTime.now());
+        try {
+            rabbitMqHelper.sendMessageWithConfirm("exchange.log", "operation.log", event,3);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "发送操作日志消息到MQ失败");
+        }
         return jwtTool.createToken(user.getUserId(), jwtProperties.getTokenTTL());
     }
 
     @Override
-    public List<User> getUsers(Long userId) {
+    public List<User> getUsers(Long userId) throws UnknownHostException {
+        Event event = new Event();
+        event.setUserId(userId);
+        event.setAction("getUsers_user");
+        String ipAddress = InetAddress.getLocalHost().getHostAddress();
+        event.setIp(ipAddress);
+        event.setDetail(userId+"用户查找"+ LocalDateTime.now());
+        try {
+            rabbitMqHelper.sendMessageWithConfirm("exchange.log", "operation.log", event,3);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "发送操作日志消息到MQ失败");
+        }
         String userRoleCode = permissionClient.getUserRoleCode(userId);
         if ("user".equals(userRoleCode)){
             return List.of(getById(userId));
@@ -158,7 +180,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Page<User> getPageUsers(Long userId, int pageNum, int pageSize) {
+    public Page<User> getPageUsers(Long userId, int pageNum, int pageSize) throws UnknownHostException {
+        Event event = new Event();
+        event.setUserId(userId);
+        event.setAction("getPageUsers_user");
+        String ipAddress = InetAddress.getLocalHost().getHostAddress();
+        event.setIp(ipAddress);
+        event.setDetail(userId+"用户分页查找"+ LocalDateTime.now());
+        try {
+            rabbitMqHelper.sendMessageWithConfirm("exchange.log", "operation.log", event,3);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "发送操作日志消息到MQ失败");
+        }
         String userRoleCode = permissionClient.getUserRoleCode(userId);
         Page<User> page = new Page<>(pageNum, pageSize);
         if ("user".equals(userRoleCode)){
@@ -172,7 +205,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public User getUserInfo(Long userId, Long id) {
+    public User getUserInfo(Long userId, Long id) throws UnknownHostException {
+        Event event = new Event();
+        event.setUserId(userId);
+        event.setAction("getUserInfo_user");
+        String ipAddress = InetAddress.getLocalHost().getHostAddress();
+        event.setIp(ipAddress);
+        event.setDetail(userId+"用户查找信息"+ LocalDateTime.now());
+        try {
+            rabbitMqHelper.sendMessageWithConfirm("exchange.log", "operation.log", event,3);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "发送操作日志消息到MQ失败");
+        }
         String userRoleCode = permissionClient.getUserRoleCode(id);
         if ("user".equals(userRoleCode)){
             return userId.equals(id) ?getById(userId):null;
@@ -185,7 +229,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Boolean updateUserInfo(Long userId, Long currentId, UserInfo userInfo) {
+    public Boolean updateUserInfo(Long userId, Long currentId, UserInfo userInfo) throws UnknownHostException {
+        Event event = new Event();
+        event.setUserId(userId);
+        event.setAction("updateUserInfo_user");
+        String ipAddress = InetAddress.getLocalHost().getHostAddress();
+        event.setIp(ipAddress);
+        event.setDetail(userId+"用户更新"+ LocalDateTime.now());
+        try {
+            rabbitMqHelper.sendMessageWithConfirm("exchange.log", "operation.log", event,3);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "发送操作日志消息到MQ失败");
+        }
         String userRoleCode = permissionClient.getUserRoleCode(currentId);
         User user = new User();
         BeanUtils.copyProperties(userInfo, user);
@@ -201,7 +256,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Boolean updateUserPassword(Long userId, Long currentId, PasswordDTO passwordDTO) {
+    public Boolean updateUserPassword(Long userId, Long currentId, PasswordDTO passwordDTO) throws UnknownHostException {
+        Event event = new Event();
+        event.setUserId(userId);
+        event.setAction("updateUserPassword_user");
+        String ipAddress = InetAddress.getLocalHost().getHostAddress();
+        event.setIp(ipAddress);
+        event.setDetail(userId+"用户更新密码"+ LocalDateTime.now());
+        try {
+            rabbitMqHelper.sendMessageWithConfirm("exchange.log", "operation.log", event,3);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "发送操作日志消息到MQ失败");
+        }
         String userRoleCode = permissionClient.getUserRoleCode(currentId);
         String userPassword = passwordDTO.getOldPassword();
         String newPassword = passwordDTO.getNewPassword();

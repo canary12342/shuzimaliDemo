@@ -16,6 +16,8 @@ import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+
 /**
  * 消费事务消息
  * 配置RocketMQ监听
@@ -28,7 +30,7 @@ import org.springframework.stereotype.Service;
         ,topic = "BIND_TOPIC"
         ,messageModel = MessageModel.CLUSTERING
         ,selectorExpression = "userId")
-public class RocketMistranslationListener implements RocketMQListener<MessageExt> {
+public class RocketMistranslationListener implements RocketMQListener<User> {
     private final RolesService rolesService;
     private final PermissionService permissionService;
     private final StringRedisTemplate stringRedisTemplate;
@@ -36,25 +38,19 @@ public class RocketMistranslationListener implements RocketMQListener<MessageExt
 
 
     @Override
-    public void onMessage(MessageExt messageExt) {
+    public void onMessage(User user) {
         try {
-
-            byte[] body = messageExt.getBody();
-            User user = JSON.parseObject(body, User.class);
+            stringRedisTemplate.opsForValue().setIfAbsent(String.valueOf(user.getUserId()), "1", Duration.ofMinutes(10));
             log.info("消费消息 事务消息：{}", user);
             UserRole userRole = new UserRole();
             userRole.setUserId(user.getUserId());
             Roles roles = rolesService.lambdaQuery().eq(Roles::getRoleCode, "user").one();
-            if(roles == null){
-                throw new RuntimeException("没有找到角色");
-            }
             userRole.setRoleId(roles.getRoleId());
             permissionService.save(userRole);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        String transactionId = messageExt.getProperty(RocketMQHeaders.TRANSACTION_ID);
         //userClient.processedCallback(transactionId);
-        stringRedisTemplate.opsForSet().remove("user:permission:processingBindUserRole",transactionId);
+        stringRedisTemplate.opsForSet().remove("user:permission:processingBindUserRole",String.valueOf(user.getUserId()));
     }
 }

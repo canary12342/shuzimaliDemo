@@ -29,28 +29,29 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public Result<String> login(@RequestBody LoginDTO loginDTO){
+    public Result<String> login(@RequestBody LoginDTO loginDTO) throws UnknownHostException {
         return ResultUtils.success(userService.login(loginDTO));
     }
     @GetMapping("/users")
-    public Result<Page<User>> getUsers(@RequestParam Integer pageNum,@RequestParam Integer pageSize){
+    public Result<Page<User>> getUsers(@RequestParam Integer pageNum,@RequestParam Integer pageSize) throws UnknownHostException {
         Long userId = UserContext.getUser();
         return ResultUtils.success(userService.getPageUsers(userId, pageNum, pageSize));
     }
 
     @GetMapping("/{userId}")
-    public Result<User> getUserInfo(@PathVariable Long userId){
+    public Result<User> getUserInfo(@PathVariable Long userId) throws UnknownHostException {
         Long id = UserContext.getUser();
         return ResultUtils.success(userService.getUserInfo(userId,id));
     }
     @PutMapping("/{userId}")
-    public Result<Boolean> updateUserInfo(@PathVariable Long userId,@RequestBody UserInfo userInfo){
+    public Result<Boolean> updateUserInfo(@PathVariable Long userId,@RequestBody UserInfo userInfo) throws UnknownHostException {
         Long currentId = UserContext.getUser();
         return ResultUtils.success(userService.updateUserInfo(userId,currentId,userInfo));
     }
-    @PostMapping("/{userId}")
-    public Result<Boolean> updateUserPassword(@PathVariable Long userId, PasswordDTO passwordDTO){
+    @PostMapping("/reset-password")
+    public Result<Boolean> updateUserPassword(PasswordDTO passwordDTO) throws UnknownHostException {
         Long currentId = UserContext.getUser();
+        Long userId = passwordDTO.getUserId();
         return ResultUtils.success(userService.updateUserPassword(userId,currentId,passwordDTO));
     }
     @GetMapping("/processedCallback/{id}")
