@@ -29,20 +29,7 @@ public class OperationLogsListener {
 
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "operation-logs-queue"
-                    , durable = "true"
-                    /*,arguments = {
-                        // 设置最大重试次数（例如3次）
-                        @Argument(name = "x-max-attempts", value = "3", type = "long"),
-
-                        // 设置消息TTL（可选）
-                        @Argument(name = "x-message-ttl", value = "10000", type = "long"),
-
-                        // 设置死信交换机
-                        @Argument(name = "x-dead-letter-exchange", value = "exchange.dlq"),
-
-                        // 设置死信路由键（可选）
-                        @Argument(name = "x-dead-letter-routing-key", value = "dlq.operation.log")
-                    }*/),
+                    , durable = "true"),
             exchange = @Exchange(value = "exchange.log", durable = "true", type = ExchangeTypes.TOPIC),
             key = "operation.log"
     )

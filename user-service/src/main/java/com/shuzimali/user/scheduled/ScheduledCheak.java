@@ -17,8 +17,7 @@ public class ScheduledCheak implements CommandLineRunner {
     private final UserService userService;
     @Override
     public void run(String... args) {
-        // 每10秒执行一次
-        CronUtil.schedule("*/10 * * * * *", (Task) () -> {
+        CronUtil.schedule("*/30 * * * * *", (Task) () -> {
             Set<String> members = stringRedisTemplate.opsForSet().members("user:permission:processingBindUserRole");
             if (members != null) {
                 for(String userId:members){

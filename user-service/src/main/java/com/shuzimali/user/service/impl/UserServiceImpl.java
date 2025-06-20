@@ -81,7 +81,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         log.info("【发送半消息】transactionId={}", transactionId);
 
         try {
-            // 校验事务ID非空
             if (transactionId.isEmpty()) {
                 throw new IllegalArgumentException("transactionId 不能为空");
             }
@@ -91,10 +90,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             TransactionSendResult sendResult = rocketMQTemplate.sendMessageInTransaction(
                     Topic+":"+Tag, message, user);
             log.debug("【发送半消息】sendResult={}", JSON.toJSONString(sendResult));
-            // 判断发送状态
             if (sendResult == null || !SendStatus.SEND_OK.equals(sendResult.getSendStatus())) {
                 log.error("【发送半消息失败】sendResult={}", JSON.toJSONString(sendResult));
-                // 可选：抛出自定义异常或触发补偿机制
                 throw new RuntimeException("事务消息发送失败: " + sendResult);
             }
 
@@ -136,7 +133,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String encryptPassword = getEncryptPassword(userPassword);
         // 3. 查询数据库中的用户是否存在
         User user = lambdaQuery().eq(User::getUsername, username).eq(User::getPassword, encryptPassword).one();
-        // 不存在，抛异常
         if (user == null) {
             log.info("user login failed, username cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或者密码错误");
@@ -246,8 +242,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         BeanUtils.copyProperties(userInfo, user);
         user.setUserId(userId);
         if ("user".equals(userRoleCode)){
+            permissionClient.upgradeToAdmin(userId);
             return userId.equals(currentId) ?updateById(user):null;
         }else if("admin".equals(userRoleCode)){
+            permissionClient.downgradeToUser(userId);
             List<Long> userIds =permissionClient.getNormalUsers();
             return userIds.contains(userId)?updateById(user):null;
         }else {
