@@ -8,6 +8,8 @@ import com.shuzimali.logging.service.OperationLogsService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.amqp.support.AmqpHeaders;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -26,6 +29,7 @@ import java.time.Duration;
 public class OperationLogsListener {
     private final StringRedisTemplate stringRedisTemplate;
     private final OperationLogsService operationLogsService;
+    private final RedissonClient redissonClient;
 
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "operation-logs-queue"
@@ -36,18 +40,19 @@ public class OperationLogsListener {
             ,ackMode = "MANUAL" )
     public void onApplicationEvent(@Payload Event event
             , Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag
-            ,@Header(AmqpHeaders.MESSAGE_ID) String messageId) throws IOException {
+            ,@Header(AmqpHeaders.MESSAGE_ID) String messageId) throws IOException, InterruptedException {
         log.info("OperationLogsListener: {}", event);
+        //  幂等检查（防止重复消费）
+        String redisKey = "log:messageId:" + messageId;
+        // Boolean isFirstProcess  = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
+        RLock lock = redissonClient.getLock(redisKey);
+        boolean isFirstProcess = lock.tryLock(10, TimeUnit.MINUTES);
+        if (Boolean.FALSE.equals(isFirstProcess)) {
+            log.warn("消息已消费，直接ACK. messageId={}", event.getMessageId());
+            channel.basicAck(tag, false);
+            return;
+        }
         try {
-            //  幂等检查（防止重复消费）
-            String redisKey = "log:messageId:" + messageId;
-            Boolean isFirstProcess  = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
-            if (Boolean.FALSE.equals(isFirstProcess)) {
-                log.warn("消息已消费，直接ACK. messageId={}", event.getMessageId());
-                channel.basicAck(tag, false);
-                return;
-            }
-
             OperationLogs operationLog = new OperationLogs();
             operationLog.setMessageId(event.getMessageId());
             operationLog.setAction(event.getAction());
@@ -65,6 +70,10 @@ public class OperationLogsListener {
         } catch (Exception e) {
             log.error("其它处理异常: {}", e.getMessage(), e);
             channel.basicNack(tag, false, true);
+        }finally {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 }
