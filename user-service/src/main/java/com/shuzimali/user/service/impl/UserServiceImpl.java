@@ -13,6 +13,7 @@ import com.shuzimali.user.config.JwtProperties;
 import com.shuzimali.user.entity.*;
 
 import com.shuzimali.user.mapper.UserMapper;
+import com.shuzimali.user.service.TransactionLogsService;
 import com.shuzimali.user.service.UserService;
 import com.shuzimali.user.utils.JwtTool;
 import com.shuzimali.user.utils.RabbitMqHelper;
@@ -48,12 +49,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final RabbitMqHelper rabbitMqHelper;
     private final RocketMQTemplate rocketMQTemplate;
     private final StringRedisTemplate stringRedisTemplate;
+    private final TransactionLogsService transactionLogsService;
     public static final String Topic = "BIND_TOPIC";
     private static final String Tag = "userId";
 
     @Override
     @Transactional
     public boolean register(UserDTO userDTO) throws UnknownHostException {
+        log.info("【用户注册】username={}", userDTO.getUsername());
         List<User> list = lambdaQuery().eq(User::getUsername, userDTO.getUsername()).list();
         String username = userDTO.getUsername();
         String userPassword = userDTO.getPassword();
@@ -117,6 +120,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public String login(LoginDTO loginDTO) throws UnknownHostException {
+        log.info("【用户登录】username={}", loginDTO.getUsername());
         String username = loginDTO.getUsername();
         String userPassword = loginDTO.getPassword();
         // 1. 校验
@@ -153,6 +157,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public List<User> getUsers(Long userId) throws UnknownHostException {
+        log.info("【用户查找】userId={}", userId);
         Event event = new Event();
         event.setUserId(userId);
         event.setAction("getUsers_user");
@@ -177,6 +182,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Page<User> getPageUsers(Long userId, int pageNum, int pageSize) throws UnknownHostException {
+        log.info("【用户分页查找】userId={},pageNum={},pageSize={}", userId, pageNum, pageSize);
         Event event = new Event();
         event.setUserId(userId);
         event.setAction("getPageUsers_user");
@@ -202,6 +208,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User getUserInfo(Long userId, Long id) throws UnknownHostException {
+        log.info("【用户查找信息】userId={},id={}", userId, id);
         Event event = new Event();
         event.setUserId(userId);
         event.setAction("getUserInfo_user");
@@ -226,6 +233,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean updateUserInfo(Long userId, Long currentId, UserInfo userInfo) throws UnknownHostException {
+        log.info("【用户更新信息】userId={},currentId={},userInfo={}", userId, currentId, userInfo);
         Event event = new Event();
         event.setUserId(userId);
         event.setAction("updateUserInfo_user");
@@ -242,10 +250,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         BeanUtils.copyProperties(userInfo, user);
         user.setUserId(userId);
         if ("user".equals(userRoleCode)){
-            permissionClient.upgradeToAdmin(userId);
+           //permissionClient.upgradeToAdmin(userId);
             return userId.equals(currentId) ?updateById(user):null;
         }else if("admin".equals(userRoleCode)){
-            permissionClient.downgradeToUser(userId);
+            //permissionClient.downgradeToUser(userId);
             List<Long> userIds =permissionClient.getNormalUsers();
             return userIds.contains(userId)?updateById(user):null;
         }else {
@@ -255,6 +263,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean updateUserPassword(Long userId, Long currentId, PasswordDTO passwordDTO) throws UnknownHostException {
+        log.info("【用户更新密码】userId={},currentId={},passwordDTO={}", userId, currentId, passwordDTO);
         Event event = new Event();
         event.setUserId(userId);
         event.setAction("updateUserPassword_user");
@@ -298,8 +307,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveUserWithLog(User user,String transactionId) {
+        log.info("【用户保存信息】user={},transactionId={}", user, transactionId);
         save(user);
-
+        TransactionLogs transactionLogs = new TransactionLogs();
+        transactionLogs.setTransactionId(transactionId);
+        transactionLogs.setUserId(user.getUserId());
+        transactionLogsService.save(transactionLogs);
         stringRedisTemplate.opsForSet().add("user:permission:processingBindUserRole", String.valueOf(user.getUserId()));
     }
 

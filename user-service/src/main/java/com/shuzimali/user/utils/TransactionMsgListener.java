@@ -1,6 +1,8 @@
 package com.shuzimali.user.utils;
 
+import com.shuzimali.user.entity.TransactionLogs;
 import com.shuzimali.user.entity.User;
+import com.shuzimali.user.service.TransactionLogsService;
 import com.shuzimali.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 public class TransactionMsgListener implements RocketMQLocalTransactionListener {
     private final UserService userService;
     private final StringRedisTemplate stringRedisTemplate;
+    private final TransactionLogsService transactionLogsService;
 
     @Override
     public RocketMQLocalTransactionState executeLocalTransaction(Message message, Object o) {
@@ -57,25 +60,20 @@ public class TransactionMsgListener implements RocketMQLocalTransactionListener 
         }
 
         log.info("【回查本地事务】transactionId={}, 开始查询", transactionId);
-        String s;
+        TransactionLogs transactionLogs;
         try {
-            s = stringRedisTemplate.opsForValue().get(transactionId);
+            transactionLogs = transactionLogsService.lambdaQuery().eq(TransactionLogs::getTransactionId, transactionId).list().get(0);
         } catch (Exception e) {
-            log.error("【回查本地事务】transactionId={} 查询 Redis 异常", transactionId, e);
-            return RocketMQLocalTransactionState.UNKNOWN; // 触发 RocketMQ 重试
+            log.error("【回查本地事务】transactionId={} 查询 mysql 异常", transactionId, e);
+            return RocketMQLocalTransactionState.UNKNOWN;
         }
 
-        if (s == null) {
-            log.warn("【回查本地事务】transactionId={} 未在 Redis 中找到记录", transactionId);
+        if (transactionLogs == null) {
+            log.warn("【回查本地事务】transactionId={} 未在 mysql 中找到记录", transactionId);
             return RocketMQLocalTransactionState.ROLLBACK;
         }
 
-        if (s.isEmpty()) {
-            log.warn("【回查本地事务】transactionId={} 在 Redis 中为空字符串", transactionId);
-            return RocketMQLocalTransactionState.ROLLBACK;
-        }
-
-        log.info("【回查本地事务】transactionId={} 查询成功，值为: {}", transactionId, s);
+        log.info("【回查本地事务】transactionId={} 查询成功，值为: {}", transactionId, transactionLogs);
         return RocketMQLocalTransactionState.COMMIT;
     }
 

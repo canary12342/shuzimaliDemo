@@ -8,12 +8,14 @@ import com.shuzimali.permission.mapper.UserRoleMapper;
 import com.shuzimali.permission.service.PermissionService;
 import com.shuzimali.permission.service.RolesService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> implements PermissionService {
     private final RolesService rolesService;
@@ -28,18 +30,22 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
 
     @Override
     public String getUserRoleCode(Long userId) {
+        log.info("【获取用户角色】userId={}", userId);
         UserRole userRole = lambdaQuery().eq(UserRole::getUserId, userId).one();
         Roles roles = rolesService.getById(userRole.getRoleId());
+        log.info("【获取用户角色】roles={}", roles);
         return roles.getRoleCode();
     }
 
     @Override
     public void upgradeToAdmin(Long userId) {
+        log.info("【升级用户】userId={}", userId);
         lambdaUpdate().eq(UserRole::getUserId, userId).set(UserRole::getRoleId, 2).update();
     }
 
     @Override
     public void downgradeToUser(Long userId) {
+        log.info("【降级用户】userId={}", userId);
         lambdaUpdate().eq(UserRole::getUserId, userId).set(UserRole::getRoleId, 3).update();
     }
 

@@ -44,11 +44,10 @@ public class OperationLogsListener {
             Boolean isFirstProcess  = stringRedisTemplate.opsForValue().setIfAbsent(redisKey, "1", Duration.ofMinutes(10));
             if (Boolean.FALSE.equals(isFirstProcess)) {
                 log.warn("消息已消费，直接ACK. messageId={}", event.getMessageId());
-                channel.basicAck(tag, false); // 确认消息
+                channel.basicAck(tag, false);
                 return;
             }
 
-            // 业务处理（写入数据库）
             OperationLogs operationLog = new OperationLogs();
             operationLog.setMessageId(event.getMessageId());
             operationLog.setAction(event.getAction());
@@ -57,16 +56,14 @@ public class OperationLogsListener {
             operationLog.setDetail(event.getDetail());
             operationLogsService.save(operationLog);
 
-            // 手动ACK确认
             channel.basicAck(tag, false);
             log.info("日志处理完成: {}", event);
 
         } catch (DuplicateKeyException e) {
             log.warn("数据库幂等冲突: {}", e.getMessage());
-            channel.basicAck(tag, false); // 已处理过，直接ACK
+            channel.basicAck(tag, false);
         } catch (Exception e) {
             log.error("其它处理异常: {}", e.getMessage(), e);
-            //业务异常，NACK并重回队列（延迟重试）
             channel.basicNack(tag, false, true);
         }
     }
