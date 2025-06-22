@@ -15,6 +15,8 @@ import com.shuzimali.user.entity.*;
 import com.shuzimali.user.mapper.UserMapper;
 import com.shuzimali.user.service.TransactionLogsService;
 import com.shuzimali.user.service.UserService;
+import com.shuzimali.user.strategy.UserUpdateStrategy;
+import com.shuzimali.user.strategy.UserUpdateStrategyFactory;
 import com.shuzimali.user.utils.JwtTool;
 import com.shuzimali.user.utils.RabbitMqHelper;
 import lombok.RequiredArgsConstructor;
@@ -249,16 +251,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = new User();
         BeanUtils.copyProperties(userInfo, user);
         user.setUserId(userId);
-        if ("user".equals(userRoleCode)){
-           //permissionClient.upgradeToAdmin(userId);
-            return userId.equals(currentId) ?updateById(user):null;
-        }else if("admin".equals(userRoleCode)){
-            //permissionClient.downgradeToUser(userId);
-            List<Long> userIds =permissionClient.getNormalUsers();
-            return userIds.contains(userId)?updateById(user):null;
-        }else {
+        UserUpdateStrategyFactory strategyFactory = new UserUpdateStrategyFactory(permissionClient);
+        UserUpdateStrategy strategy = strategyFactory.getStrategy(userRoleCode);
+        if (strategy.canUpdate(user, currentId)) {
+            strategy.handlePermission(user);
             return updateById(user);
         }
+        return null;
     }
 
     @Override
@@ -294,14 +293,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或者密码错误");
         }
         user.setPassword(newEncryptPassword);
-        if ("user".equals(userRoleCode)){
-            return userId.equals(currentId) ?updateById(user):null;
-        }else if("admin".equals(userRoleCode)){
-            List<Long> userIds =permissionClient.getNormalUsers();
-            return userIds.contains(userId)?updateById(user):null;
-        }else {
+        UserUpdateStrategyFactory strategyFactory = new UserUpdateStrategyFactory(permissionClient);
+        UserUpdateStrategy strategy = strategyFactory.getStrategy(userRoleCode);
+        if (strategy.canUpdate(user, currentId)) {
+            strategy.handlePermission(user);
             return updateById(user);
         }
+        return null;
     }
 
     @Override
