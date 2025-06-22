@@ -109,3 +109,5 @@ rocketmq:
   producer:
       group: shuzimali-user-service
       send-message-timeout: 5000
+      retry-times-when-send-failed: 2
+      retry-times-when-send-async-failed: 2

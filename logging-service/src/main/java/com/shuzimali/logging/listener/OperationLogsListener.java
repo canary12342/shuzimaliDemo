@@ -33,7 +33,11 @@ public class OperationLogsListener {
 
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "operation-logs-queue"
-                    , durable = "true"),
+                    , durable = "true"
+                    ,arguments = {
+                        @Argument(name = "x-dead-letter-exchange", value = "exchange.dlq"),
+                        @Argument(name = "x-dead-letter-routing-key", value = "dlq.operation.log")
+                    }),
             exchange = @Exchange(value = "exchange.log", durable = "true", type = ExchangeTypes.TOPIC),
             key = "operation.log"
     )
