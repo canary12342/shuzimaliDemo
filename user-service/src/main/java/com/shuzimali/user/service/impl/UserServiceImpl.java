@@ -312,6 +312,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         TransactionLogs transactionLogs = new TransactionLogs();
         transactionLogs.setTransactionId(transactionId);
         transactionLogs.setUserId(user.getUserId());
+        transactionLogs.setStatus(0);
         transactionLogsService.save(transactionLogs);
         stringRedisTemplate.opsForSet().add("user:permission:processingBindUserRole", String.valueOf(user.getUserId()));
     }

@@ -24,6 +24,8 @@ public class TransactionLogs implements Serializable {
 
     private String transactionId;
 
+    private int status;
+
     /**
      * 
      */
