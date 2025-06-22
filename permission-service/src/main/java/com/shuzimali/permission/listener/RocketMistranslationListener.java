@@ -39,6 +39,7 @@ public class RocketMistranslationListener implements RocketMQListener<User> {
 
     @Override
     public void onMessage(User user) {
+        log.info("【用户权限绑定任务】user={}", user);
        try {
             RLock lock = redissonClient.getLock(String.format("lock:permission:%d", user.getUserId()));
             boolean isLock = lock.tryLock(10, TimeUnit.MINUTES);
@@ -54,6 +55,7 @@ public class RocketMistranslationListener implements RocketMQListener<User> {
                 if (roles == null) {
                     throw new RuntimeException("角色 'user' 不存在");
                 }
+                log.info("【获取用户角色】roles={}", roles);
                 userRole.setRoleId(roles.getRoleId());
                 permissionService.save(userRole);
             } catch (Exception e) {
