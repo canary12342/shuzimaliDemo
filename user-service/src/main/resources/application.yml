@@ -21,6 +21,11 @@ spring:
     host: 127.0.0.1
     port: 6379
     timeout: 5000
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8090 # sentinel的控制台地址
+      http-method-specify: true # 是否设置请求方式作为资源名称
 
   # 日志配置
   logging:
@@ -111,3 +116,8 @@ rocketmq:
       send-message-timeout: 5000
       retry-times-when-send-failed: 2
       retry-times-when-send-async-failed: 2
+feign:
+  okhttp:
+    enabled: true # 开启OKHttp功能
+  sentinel:
+    enabled: true
