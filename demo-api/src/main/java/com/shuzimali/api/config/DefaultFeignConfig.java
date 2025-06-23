@@ -1,6 +1,7 @@
 package com.shuzimali.api.config;
 
 
+import com.shuzimali.api.client.fallback.PermissionClientFallbackFactory;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -20,6 +21,10 @@ public class DefaultFeignConfig {
 
             }
         };
+    }
+    @Bean
+    public PermissionClientFallbackFactory permissionClientFallbackFactory(){
+        return new PermissionClientFallbackFactory();
     }
 
 }

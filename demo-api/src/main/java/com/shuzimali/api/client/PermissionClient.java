@@ -1,11 +1,12 @@
 package com.shuzimali.api.client;
 
+import com.shuzimali.api.client.fallback.PermissionClientFallbackFactory;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient("shuzimali-permission-service")
+@FeignClient(value = "shuzimali-permission-service",fallbackFactory = PermissionClientFallbackFactory.class)
 public interface PermissionClient {
     // 绑定默认角色（普通用户）
     @PutMapping("/permission/bindDefaultRole")
