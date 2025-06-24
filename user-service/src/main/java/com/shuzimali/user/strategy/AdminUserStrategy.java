@@ -15,7 +15,7 @@ public class AdminUserStrategy implements UserUpdateStrategy {
     @Override
     public boolean canUpdate(User user, Long currentId) {
         List<Long> userIds = permissionClient.getNormalUsers();
-        return userIds.contains(user.getUserId());
+        return userIds.contains(user.getUserId())||user.getUserId().equals(currentId);
     }
 
     @Override
